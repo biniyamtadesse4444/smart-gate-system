@@ -4,12 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+python-decouple = "*"
+mysqlclient = "*"
 django = "*"
+django-debug-toolbar = "*"
 djoser = "*"
 django-filter = "*"
 djangorestframework = "*"
-django-debug-toolbar = "*"
-mysqlclient = "*"
 
 [dev-packages]
 

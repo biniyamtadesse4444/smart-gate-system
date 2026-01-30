@@ -26,7 +26,9 @@ SECRET_KEY = 'django-insecure-lvp#*%6%2e^#x62lp%rr-1v_3%djbx55ljep#a@)cpa1r4pb3y
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '*'
+]
 
 
 
@@ -46,13 +48,17 @@ INSTALLED_APPS = [
     'core',
     'logs',
     'payment',
-    'users',
+    
  
 ]
 
-AUTH_USER_MODEL = 'users.user'
+AUTH_USER_MODEL = 'core.Customer'
 
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+]
 
+#user
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
@@ -112,12 +118,15 @@ WSGI_APPLICATION = 'gate_system.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'gate_system',
+        'NAME': 'smart_gate',
         'HOST': 'localhost',
         'USER': 'root',
-        'PASSWORD': 'Bina,t,kassa1',
+        'PASSWORD': 'bina1t1kassa@!',
+        'PORT': '3306',
     }
 }
+
+
 
 
 # Password validation
@@ -174,7 +183,24 @@ DJOSER = {
 SIMPLE_JWT = {
 'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
 'AUTH_HEADER_TYPES': ('JWT',),
+'USER_ID_FIELD': 'phone_number',
+'USER_ID_CLAIM': 'user_id',
 }
+
+
+from decouple import config
+from pathlib import Path
+
+
+
+CHAPA_MODE = config("CHAPA_MODE", default="TEST").upper()
+
+
+CHAPA_PUBLIC_KEY = config("CHAPA_PUBLIC_KEY_TEST")
+CHAPA_SECRET_KEY = config("CHAPA_SECRET_KEY_TEST")
+
+    
+    
 
 #user1
 #eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1MDgwMjc1LCJpYXQiOjE3NjQ5OTM4NzUsImp0aSI6ImI3NDg1Y2I5MDIzNDQ5NGZhMWQ1N2E2MTU1ODEwNjRkIiwidXNlcl9pZCI6IjMifQ.RfNQREt74vSfn1I-ntkBSBxlpNobeD96c35JgIZ9vx4

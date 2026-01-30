@@ -18,7 +18,18 @@ from django.contrib import admin
 from django.urls import path
 from django.urls import include, path
 from debug_toolbar.toolbar import debug_toolbar_urls
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('core/', include('core.urls')),
+    path('accesslog/', include('logs.urls')),
+    path('sunshine/', include('payment.urls')),
+    path('auth/', include('djoser.urls')),
+    path('auth/', include('djoser.urls.jwt')),
+    path("auth/jwt/create/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("auth/jwt/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 ] + debug_toolbar_urls()
+
+

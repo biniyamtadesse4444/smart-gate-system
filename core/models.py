@@ -1,29 +1,38 @@
 from django.conf import settings
 from django.db import models
 from django.contrib import admin
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from .managers import CustomerManager
 
 
-class Customer(models.Model):
-    phone_number = models.CharField(max_length=10, primary_key=True, editable=True)
-    first_name = models.CharField(max_length=50, null=False)
-    last_name = models.CharField(max_length=50, null=False)
+class Customer(AbstractBaseUser, PermissionsMixin):
+    ADMIN = 'A'
+    CUSTOMER = 'C'
+    CATEGORY_CHOICE = [
+        (ADMIN, "ADMIN"),
+        (CUSTOMER, "CUSTOMER"),
+    ]
+
+    phone_number = models.CharField(max_length=10, primary_key=True)
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    category = models.CharField(max_length=1, choices=CATEGORY_CHOICE, default=CUSTOMER)
     is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
     issued_date = models.DateField(auto_now_add=True, editable=False)
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, editable=False,related_name='customer')
+    email = models.EmailField(null=True, blank=True, max_length=255, unique=True)
 
-    def __str__(self) -> str:
-        return f'{self.first_name} {self.last_name}'
-    
-    
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        # sync phone_number to User.username
-        if self.user.username != self.phone_number:
-            self.user.username = self.phone_number
-            self.user.save(update_fields=['username'])
-    
+    objects = CustomerManager()
+
+    USERNAME_FIELD = "phone_number"
+    REQUIRED_FIELDS = ["first_name", "last_name"]
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
     class Meta:
-        ordering = ['first_name', 'last_name']
+        ordering = ["first_name", "last_name"]
+
 
 class Card(models.Model):
     #card type choices
@@ -57,8 +66,8 @@ class Card(models.Model):
     card_model = models.CharField(max_length=1, choices=CARD_MODEL_CHOICE, default=C_STICKER)
     card_status = models.CharField(max_length=1, choices=CARD_STATUS_CHOICE, default=C_ACTIVE)
     registered_date = models.DateField(auto_now_add=True)
-    remark = models.CharField(max_length=250)
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='cards')
+    remark = models.CharField(max_length=250, null=True, blank=True)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='cards', null=True, blank=True)
 
     def __str__(self) -> str:
         return str(self.id)
@@ -70,26 +79,7 @@ class Card(models.Model):
     @admin.display(ordering='customer__last_name')
     def last_name(self):
         return self.customer.last_name
-    
-    def is_valid(self) -> bool:
-        return (self.card_status == self.C_ACTIVE and
-                self.customer.is_active
-                )
-    
-    def can_open(self, door: 'Door') -> bool:
-        if not door.is_active:
-            return False
-        if self.card_type == self.C_MASTER:
-            return self.is_valid()
         
-        return(
-            self.is_valid() and 
-            self.door_permissions.filter(
-                door = door,
-                can_access=True
-            ).exists()
-        )
-
     
     class Meta:
         ordering = ['customer__first_name', 'customer__last_name']
@@ -107,32 +97,29 @@ class Door(models.Model):
 
     door = models.CharField(max_length=1, choices=DOOR_TYPE)
     is_active = models.BooleanField(default=True)
-
-    def allowed_card(self):
-        return Card.objects.filter(
-            door_permissions=self,
-            door_permissions__can_access=True,
-            card_status=Card.C_ACTIVE,
-            customer__is_active=True
-        )
     
     def __str__(self) -> str:
-        return self.door
+        id = self.id
+        return str(id)
 
 class DoorPermission(models.Model):
     card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='doorpermissions')
     door = models.ForeignKey(Door, on_delete=models.CASCADE, related_name='doorpermissions')
-    can_access = models.BooleanField(default=True)
+    can_access = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ['card', 'door']
+        indexes = [
+            models.Index(fields=['can_access']),
+        ]
 
 class Reader(models.Model):
     name = models.CharField(max_length=50)
     door = models.ForeignKey(Door, on_delete=models.CASCADE, related_name='readers')
-
+    api_key = models.CharField(max_length=64, unique=True, null=True, blank=True,)
     def __str__(self):
-        return self.name
+        id = self.id
+        return str(id)
 
 class House(models.Model):
     VILLA = 'V'
@@ -150,4 +137,4 @@ class House(models.Model):
 
     class Meta:
         ordering = ['house_type', 'block', 'floor', 'house_no']
-# Create your models here.
+

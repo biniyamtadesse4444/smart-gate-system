@@ -59,7 +59,7 @@ class PaymentViewSet(ModelViewSet):
         return Response(serializer.data)
     
     def create(self, request, *args, **kwargs):
-        serializer = CreatePaymentSerializer(data= request.data)
+        serializer = CreatePaymentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         customer_id = request.user.phone_number

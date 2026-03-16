@@ -183,7 +183,7 @@ def chapa_callback(request):
     payment_serializer = ChappaVaildPayment(data=payment_data)
     payment_serializer.is_valid(raise_exception=True)
     payment_serializer.save()
-
+    
     return Response({"status": "payment saved"}, status=200)   
 
 

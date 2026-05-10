@@ -62,13 +62,17 @@ class Card(models.Model):
     ]
 
     id = models.CharField(max_length=7, primary_key=True)
+    card_number = models.BigIntegerField(null=True, blank=True)
+    pin = models.CharField(max_length=4, default="0000")
+    
     card_type = models.CharField(max_length=1, choices=CARD_TYPE_CHOICE, default=C_MEMBER)
     card_model = models.CharField(max_length=1, choices=CARD_MODEL_CHOICE, default=C_STICKER)
     card_status = models.CharField(max_length=1, choices=CARD_STATUS_CHOICE, default=C_ACTIVE)
     registered_date = models.DateField(auto_now_add=True)
     remark = models.CharField(max_length=250, null=True, blank=True)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='cards', null=True, blank=True)
-
+    index = models.PositiveBigIntegerField(null=True, blank=True)
+    
     def __str__(self) -> str:
         return str(self.id)
     

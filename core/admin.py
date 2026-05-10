@@ -27,7 +27,7 @@ class CardAdmin(admin.ModelAdmin):
 class CardInline(admin.TabularInline):
     model = Card
     min_num=0
-    max_num=2
+    max_num=4
     extra=1
 
 class PaymentInline(admin.TabularInline):

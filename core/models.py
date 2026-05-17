@@ -61,8 +61,7 @@ class Card(models.Model):
         (C_LOST, 'LOST')
     ]
 
-    id = models.CharField(max_length=7, primary_key=True)
-    card_number = models.BigIntegerField(null=True, blank=True)
+    id = models.CharField(max_length=9, primary_key=True)
     pin = models.CharField(max_length=4, default="0000")
     
     card_type = models.CharField(max_length=1, choices=CARD_TYPE_CHOICE, default=C_MEMBER)
